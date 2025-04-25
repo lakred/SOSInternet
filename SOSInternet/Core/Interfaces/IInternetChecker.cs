@@ -1,16 +1,15 @@
 using SOSInternet.Core.Models;
 
-namespace SOSInternet.Core.Interfaces
+namespace SOSInternet.Core.Interfaces;
+
+/// <summary>
+/// Interface for checking internet connection
+/// </summary>
+public interface IInternetChecker
 {
     /// <summary>
-    /// Interfaccia per il controllo della connessione internet
+    /// Checks the internet connection
     /// </summary>
-    public interface IInternetChecker
-    {
-        /// <summary>
-        /// Verifica la connessione internet
-        /// </summary>
-        /// <returns>Un oggetto ConnectionStatus contenente lo stato della connessione e i dettagli</returns>
-        Task<ConnectionStatus> CheckConnectionAsync();
-    }
+    /// <returns>A ConnectionStatus object containing the connection status and details</returns>
+    Task<ConnectionStatus> CheckConnectionAsync();
 }

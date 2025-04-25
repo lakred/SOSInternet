@@ -1,27 +1,27 @@
 namespace SOSInternet.Core.Models
 {
     /// <summary>
-    /// Modello per le impostazioni del router
+    /// Model for router settings
     /// </summary>
     public class RouterSettings
     {
         /// <summary>
-        /// URL di amministrazione del router
+        /// Router administration URL
         /// </summary>
-        public string Url { get; set; } = string.Empty;
+        public string Url { get; set; } = "http://192.168.1.1";
 
         /// <summary>
-        /// Nome utente per l'accesso al router (se necessario)
+        /// Username for router access (if required)
         /// </summary>
         public string? Username { get; set; }
 
         /// <summary>
-        /// Password per l'accesso al router
+        /// Password for router access
         /// </summary>
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
-        /// Indica se la password è criptata
+        /// Indicates whether the password is encrypted
         /// </summary>
         public bool UseEncryption { get; set; } = false;
     }

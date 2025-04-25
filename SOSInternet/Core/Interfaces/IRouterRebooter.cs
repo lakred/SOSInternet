@@ -1,14 +1,13 @@
-namespace SOSInternet.Core.Interfaces
+namespace SOSInternet.Core.Interfaces;
+
+/// <summary>
+/// Interface for router rebooting
+/// </summary>
+public interface IRouterRebooter
 {
     /// <summary>
-    /// Interfaccia per il riavvio del router 
+    /// Reboots the router
     /// </summary>
-    public interface IRouterRebooter
-    {
-        /// <summary>
-        /// Riavvia il router
-        /// </summary>
-        /// <returns>Task che rappresenta l'operazione asincrona di riavvio</returns>
-        Task RebootAsync();
-    }
+    /// <returns>A Task representing the asynchronous reboot operation</returns>
+    Task RebootAsync();
 }

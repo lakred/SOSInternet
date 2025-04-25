@@ -2,27 +2,25 @@ using Microsoft.Extensions.DependencyInjection;
 using SOSInternet.Core.Interfaces;
 using SOSInternet.Core.Services;
 
-namespace SOSInternet.Utilities.Extensions
-{
-    /// <summary>
-    /// Estensioni per la registrazione dei servizi
-    /// </summary>
-    public static class ServiceCollectionExtensions
-    {
-        /// <summary>
-        /// Registra i servizi dell'applicazione
-        /// </summary>
-        /// <param name="services">Collezione di servizi</param>
-        /// <returns>Collezione di servizi configurata</returns>
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-        {
-            // Registrazione dei servizi
-            services.AddSingleton<IInternetChecker, InternetChecker>();
-            services.AddSingleton<IRouterRebooter, TpLinkRouterRebooter>();
-            services.AddSingleton<IConnectionMonitor, ConnectionMonitor>();
-            services.AddHostedService(provider => (ConnectionMonitor)provider.GetRequiredService<IConnectionMonitor>());
+namespace SOSInternet.Utilities.Extensions;
 
-            return services;
-        }
+/// <summary>  
+/// Extensions for service registration  
+/// </summary>  
+public static class ServiceCollectionExtensions
+{
+    /// <summary>  
+    /// Registers the application services  
+    /// </summary>  
+    /// <param name="services">Service collection</param>  
+    /// <returns>Configured service collection</returns>  
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    { 
+        services.AddSingleton<IInternetChecker, InternetChecker>();
+        services.AddSingleton<IRouterRebooter, TpLinkRouterRebooter>();
+        services.AddSingleton<IConnectionMonitor, ConnectionMonitor>();
+        services.AddHostedService(provider => (ConnectionMonitor)provider.GetRequiredService<IConnectionMonitor>());
+
+        return services;
     }
 }

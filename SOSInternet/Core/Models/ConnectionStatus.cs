@@ -1,57 +1,56 @@
-namespace SOSInternet.Core.Models
+namespace SOSInternet.Core.Models;
+
+/// <summary>
+/// Model for the internet connection status
+/// </summary>
+public class ConnectionStatus
 {
     /// <summary>
-    /// Modello per lo stato della connessione internet
+    /// Indicates whether the internet connection is active
     /// </summary>
-    public class ConnectionStatus
+    public bool IsConnected { get; set; }
+
+    /// <summary>
+    /// Details about the internet connection
+    /// </summary>
+    public string Details { get; set; }
+
+    /// <summary>
+    /// Timestamp of the check
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// Response time in milliseconds (if available)
+    /// </summary>
+    public long? ResponseTime { get; set; }
+
+    /// <summary>
+    /// Any errors encountered during the check
+    /// </summary>
+    public string? Error { get; set; }
+
+    /// <summary>
+    /// Creates a new instance of ConnectionStatus
+    /// </summary>
+    /// <param name="isConnected">Indicates whether the connection is active</param>
+    /// <param name="details">Details about the connection</param>
+    public ConnectionStatus(bool isConnected, string details)
     {
-        /// <summary>
-        /// Indica se la connessione internet è attiva
-        /// </summary>
-        public bool IsConnected { get; set; }
+        IsConnected = isConnected;
+        Details = details;
+    }
 
-        /// <summary>
-        /// Dettagli sulla connessione internet
-        /// </summary>
-        public string Details { get; set; }
-
-        /// <summary>
-        /// Timestamp della verifica
-        /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.Now;
-
-        /// <summary>
-        /// Tempo di risposta in millisecondi (se disponibile)
-        /// </summary>
-        public long? ResponseTime { get; set; }
-
-        /// <summary>
-        /// Eventuali errori riscontrati durante la verifica
-        /// </summary>
-        public string? Error { get; set; }
-
-        /// <summary>
-        /// Crea una nuova istanza di ConnectionStatus
-        /// </summary>
-        /// <param name="isConnected">Indica se la connessione è attiva</param>
-        /// <param name="details">Dettagli sulla connessione</param>
-        public ConnectionStatus(bool isConnected, string details)
+    /// <summary>
+    /// Creates a new instance of ConnectionStatus for an error
+    /// </summary>
+    /// <param name="error">Error message</param>
+    /// <returns>A ConnectionStatus object representing an error</returns>
+    public static ConnectionStatus CreateError(string error)
+    {
+        return new ConnectionStatus(false, "Error during connection check")
         {
-            IsConnected = isConnected;
-            Details = details;
-        }
-
-        /// <summary>
-        /// Crea una nuova istanza di ConnectionStatus per un errore
-        /// </summary>
-        /// <param name="error">Messaggio di errore</param>
-        /// <returns>Un oggetto ConnectionStatus che rappresenta un errore</returns>
-        public static ConnectionStatus CreateError(string error)
-        {
-            return new ConnectionStatus(false, "Errore durante la verifica della connessione")
-            {
-                Error = error
-            };
-        }
+            Error = error
+        };
     }
 }

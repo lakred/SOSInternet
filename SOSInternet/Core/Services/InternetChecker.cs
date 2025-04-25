@@ -5,101 +5,102 @@ using SOSInternet.Core.Models;
 using System.Net.NetworkInformation;
 using System.Text;
 
-namespace SOSInternet.Core.Services
+namespace SOSInternet.Core.Services;
+
+/// <summary>
+/// Implementation of internet connection checking
+/// </summary>
+public class InternetChecker : IInternetChecker
 {
+    private readonly ILogger<InternetChecker> _logger;
+    private readonly ConnectionSettings _settings;
+
     /// <summary>
-    /// Implementazione del controllo della connessione internet
+    /// Constructor
     /// </summary>
-    public class InternetChecker : IInternetChecker
+    /// <param name="logger">Logger for activity logging</param>
+    /// <param name="options">Configuration options</param>
+    public InternetChecker(ILogger<InternetChecker> logger, IOptions<ConnectionSettings> options)
     {
-        private readonly ILogger<InternetChecker> _logger;
-        private readonly ConnectionSettings _settings;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _settings = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    }
 
-        /// <summary>
-        /// Costruttore
-        /// </summary>
-        /// <param name="logger">Logger per la registrazione delle attività</param>
-        /// <param name="options">Opzioni di configurazione</param>
-        public InternetChecker(ILogger<InternetChecker> logger, IOptions<ConnectionSettings> options)
+    /// <summary>
+    /// Checks the internet connection
+    /// </summary>
+    /// <returns>A ConnectionStatus object containing the connection status and details</returns>
+    public async Task<ConnectionStatus> CheckConnectionAsync()
+    {
+        _logger.LogDebug("Starting internet connection check");
+
+        var sb = new StringBuilder();
+        var isConnected = false;
+        long? responseTime = null;
+
+        try
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _settings = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        }
-
-        /// <summary>
-        /// Verifica la connessione internet
-        /// </summary>
-        /// <returns>Un oggetto ConnectionStatus contenente lo stato della connessione e i dettagli</returns>
-        public async Task<ConnectionStatus> CheckConnectionAsync()
-        {
-            _logger.LogDebug("Inizio verifica della connessione internet");
-            
-            var sb = new StringBuilder();
-            bool isConnected = false;
-            long? responseTime = null;
-
-            try
+            foreach (var target in _settings.PingTargets)
             {
-                // Verifica la connessione pingando più target
-                foreach (var target in _settings.PingTargets)
+                try
                 {
-                    try
-                    {
-                        var pingResult = await PingHostAsync(target);
-                        sb.AppendLine($"Ping a {target}: {(pingResult.Success ? "Riuscito" : "Fallito")}");
-                        
-                        if (pingResult.Success)
-                        {
-                            sb.AppendLine($"  Tempo di risposta: {pingResult.RoundtripTime} ms");
-                            isConnected = true;
-                            responseTime = pingResult.RoundtripTime;
-                            break; // Se almeno un ping ha successo, la connessione è attiva
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        sb.AppendLine($"Errore durante il ping a {target}: {ex.Message}");
-                    }
+                    var pingResult = await PingHostAsync(target);
+                    sb.AppendLine($"Ping to {target}: {(pingResult.Success ? "Succeeded" : "Failed")}");
+
+                    if (!pingResult.Success) continue;
+
+                    sb.AppendLine($"  Response time: {pingResult.RoundtripTime} ms");
+                    isConnected = true;
+                    responseTime = pingResult.RoundtripTime;
+                    break; // If at least one ping succeeds, the connection is active
                 }
-
-                // Verifica lo stato delle interfacce di rete
-                sb.AppendLine("\nStato delle interfacce di rete:");
-                foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+                catch (Exception ex)
                 {
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || 
-                        networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                    {
-                        sb.AppendLine($"  {networkInterface.Name}: {networkInterface.OperationalStatus}");
-                    }
+                    sb.AppendLine($"Error during ping to {target}: {ex.Message}");
                 }
+            }
 
-                var status = new ConnectionStatus(isConnected, sb.ToString())
+            sb.AppendLine("\nNetwork interface status:");
+            foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                    networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
                 {
-                    ResponseTime = responseTime
-                };
+                    sb.AppendLine($"  {networkInterface.Name}: {networkInterface.OperationalStatus}");
+                }
+            }
 
-                _logger.LogInformation("Verifica connessione completata: {IsConnected}", isConnected);
-                return status;
-            }
-            catch (Exception ex)
+            var status = new ConnectionStatus(isConnected, sb.ToString())
             {
-                _logger.LogError(ex, "Errore durante la verifica della connessione");
-                return ConnectionStatus.CreateError(ex.Message);
-            }
+                ResponseTime = responseTime
+            };
+
+            _logger.LogInformation("Connection check completed: {IsConnected}", isConnected);
+            return status;
         }
-
-        private async Task<(bool Success, long RoundtripTime)> PingHostAsync(string host)
+        catch (Exception ex)
         {
-            using var ping = new Ping();
-            try
-            {
-                var reply = await ping.SendPingAsync(host, 3000); // 3 secondi di timeout
-                return (reply.Status == IPStatus.Success, reply.RoundtripTime);
-            }
-            catch
-            {
-                return (false, 0);
-            }
+            _logger.LogError(ex, "Error during connection check");
+            return ConnectionStatus.CreateError(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Pings a host and returns the result
+    /// </summary>
+    /// <param name="host">The host to ping</param>
+    /// <returns>A tuple containing success status and roundtrip time</returns>
+    private static async Task<(bool Success, long RoundtripTime)> PingHostAsync(string host)
+    {
+        using var ping = new Ping();
+        try
+        {
+            var reply = await ping.SendPingAsync(host, 3000); 
+            return (reply.Status == IPStatus.Success, reply.RoundtripTime);
+        }
+        catch
+        {
+            return (false, 0);
         }
     }
 }

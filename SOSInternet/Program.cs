@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using SOSInternet.Core.Interfaces;
 using SOSInternet.Infrastructure.Configuration;
+using SOSInternet.Utilities.Playwright;
 
 namespace SOSInternet
 { 
@@ -15,6 +16,7 @@ namespace SOSInternet
             // Ottieni il servizio di monitoraggio
             var monitor = host.Services.GetRequiredService<IConnectionMonitor>();
 
+            await PlaywrightSetup.EnsureBrowsersInstalledAsync();
             // Avvia l'host
             await host.StartAsync();
 
